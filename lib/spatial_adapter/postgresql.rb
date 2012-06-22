@@ -213,7 +213,9 @@ module ActiveRecord::ConnectionAdapters
     end
 
     def column_spatial_info(table_name)
-      if !@raw_geom_infos_cache[table_name]
+      cache = @raw_geom_infos_cache ||= Hash.new
+
+      if !cache[table_name]
         constr = query("SELECT * FROM geometry_columns WHERE f_table_name = '#{table_name}'")
 
         raw_geom_infos = {}
@@ -235,9 +237,10 @@ module ActiveRecord::ConnectionAdapters
           #check the presence of z and m
           raw_geom_info.convert!
         end
-        @raw_geom_infos_cache[table_name] = raw_geom_infos
+        cache[table_name] = raw_geom_infos
       end
-      @raw_geom_infos_cache[table_name]
+      @raw_geom_infos_cache = cache
+      cache[table_name]
     end
   end
 
